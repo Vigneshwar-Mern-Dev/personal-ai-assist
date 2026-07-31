@@ -1,89 +1,133 @@
-# WhatsApp AI Dashboard
+# 💬 Personal WhatsApp AI Assistant & Control Room
 
-Simple personal WhatsApp assistant dashboard built with `Next.js`, `Tailwind CSS`, `Express`, `Socket.io`, `whatsapp-web.js`, and an AI provider (`OpenAI`, `OpenRouter`, `Groq`, or `Gemini`).
+A modern, full-stack personal communication automation platform integrating **WhatsApp Web automation**, **Multi-AI provider failover** (`Groq`, `Gemini`, `OpenRouter`, `OpenAI`), **Smart Message Scheduling**, and a **Real-time Glassmorphic Control Dashboard**.
 
-## What It Does
+---
 
-- Connects WhatsApp through QR login
-- Shows realtime connection state
-- Tracks recent private chats and messages
-- Sends simple AI auto replies for personal chats
-- Lets you reconnect, logout, regenerate QR, or reset the saved session
+## ✨ Features
 
-## Stack
+- 🤖 **AI Auto-Replies**: Automatic, context-aware casual replies for one-to-one personal chats.
+- ⚡ **Multi-AI Provider Failover**: Automatic fallback chain (`Groq` ➔ `Gemini` ➔ `OpenRouter` ➔ `OpenAI`). If the primary provider hits a rate-limit or outage, secondary providers take over seamlessly.
+- 📅 **Message Scheduling & Reminders**: Schedule one-time or recurring WhatsApp messages to any contact with date/time pickers, quick AI templates, live countdowns, and automated background execution.
+- 🛑 **Human Mode (Pause AI)**: Pause AI per-chat for manual intervention. Chat pause states persist in storage across server restarts.
+- 💬 **Direct Dashboard Messaging**: Send manual WhatsApp messages to any contact directly from the dashboard UI.
+- 🛡️ **Anti-Ban Protections**: Randomized typing simulation, 5s–15s randomized delays, and automatic exclusion of groups, business contacts, telecom services, and banks (*SBI, HDFC, ICICI*).
+- 🎨 **Glassmorphic UI**: Built with Next.js 14, Tailwind CSS, custom design tokens, animated live status indicators, and Socket.io real-time updates.
 
-- Frontend: `Next.js`, `Tailwind CSS`, `socket.io-client`
-- Backend: `Node.js`, `Express`, `Socket.io`, `whatsapp-web.js`, `OpenAI`, `OpenRouter`, `Groq`, or `Gemini`
+---
 
-## Project Structure
+## 🛠️ Tech Stack
+
+- **Frontend**: Next.js 14, React 18, Tailwind CSS, Socket.io Client, Lucide React
+- **Backend**: Node.js, Express, Socket.io, `whatsapp-web.js` (Puppeteer / Chromium)
+- **AI Integrations**: `@google/generative-ai` (Gemini), `openai` (Groq, OpenRouter, OpenAI)
+- **Process & Deployment**: PM2, Docker (Multi-stage build), dumb-init
+
+---
+
+## 📁 Project Structure
 
 ```text
-app/
-components/
-lib/
-server/
-  ai/
-  bot/
-  routes/
-  services/
-  socket/
-  utils/
+vr-2/
+├── app/                  # Next.js 14 App Router (Chats, Auto-Reply, Schedule, Session, Settings)
+├── components/           # UI Components (AppShell, ChatList, ScheduleManager, SessionPanel, etc.)
+├── lib/                  # Shared API utilities and formatting helpers
+├── server/
+│   ├── ai/               # AI Service provider integration & failover logic
+│   ├── bot/              # Puppeteer Chromium client setup for whatsapp-web.js
+│   ├── data/             # Persistent JSON storage (settings, messages, paused_chats, scheduled_messages)
+│   ├── routes/           # Express API endpoints (Auth, Chats, Schedule, Session, Settings)
+│   ├── services/         # Core business logic (Store, AutoReply, Schedule, WhatsApp)
+│   ├── socket/           # Real-time WebSocket server
+│   └── utils/            # Logger, CORS, Chat Filters, Storage utilities
+├── scripts/              # Helper scripts (clean.js, next-command.js)
+├── Dockerfile            # Multi-stage Docker build config
+├── ecosystem.config.js   # PM2 production process configuration
+└── tailwind.config.js    # Custom design tokens & theme extension
 ```
 
-## Environment
+---
 
-Copy `.env.example` to `.env` and fill in one AI provider:
+## 🔑 Environment Configuration (`.env`)
+
+Create a `.env` file in the root directory:
 
 ```env
 PORT=3001
-NEXT_PUBLIC_API_URL=http://localhost:3001
-NEXT_PUBLIC_SOCKET_URL=http://localhost:3001
-DASHBOARD_API_TOKEN=change_this_local_token
-NEXT_PUBLIC_DASHBOARD_API_TOKEN=change_this_local_token
-CORS_ORIGINS=
+DASHBOARD_USERNAME=Vignesh
+DASHBOARD_PASSWORD=Vignesh123
+DASHBOARD_PASSWORD_HASH=$2b$10$...
+JWT_SECRET=your_super_secret_jwt_key
+CORS_ORIGINS=http://localhost:3000
+
+# AI Provider Configuration (groq | gemini | openrouter | openai)
 AI_PROVIDER=groq
-OPENAI_API_KEY=your_key_here
-OPENAI_MODEL=gpt-4.1-mini
-OPENROUTER_API_KEY=your_openrouter_key_here
-OPENROUTER_MODEL=openai/gpt-4o-mini
-OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
-OPENROUTER_SITE_URL=http://localhost:3000
-OPENROUTER_APP_NAME=Personal Chat
-GROQ_API_KEY=your_groq_key_here
+GROQ_API_KEY=gsk_your_groq_key_here
 GROQ_MODEL=llama-3.1-8b-instant
-GROQ_BASE_URL=https://api.groq.com/openai/v1
+
+OPENROUTER_API_KEY=
 GEMINI_API_KEY=
-GEMINI_MODEL=gemini-1.5-flash
+OPENAI_API_KEY=
+
+# Persistent Session Path
+WWEBJS_DATA_ROOT=C:\\tmp\\vr-2-runtime
 ```
 
-## Run
+---
 
+## 🚀 Getting Started
+
+### 1. Install Dependencies
 ```bash
 npm install
-npm run dev
 ```
 
-Frontend runs on `http://localhost:3000`.
-Backend runs on `http://localhost:3001`.
+### 2. Run in Development Mode
+```bash
+npm run dev
+```
+- **Frontend Dashboard**: `http://localhost:3000`
+- **Backend API**: `http://localhost:3001`
 
-## Important Notes
+---
 
-- AI replies only run for private chats.
-- Group chats are ignored.
-- Messages from yourself are ignored.
-- Empty messages are ignored.
-- Dashboard API routes require `DASHBOARD_API_TOKEN` when it is set.
-- By default, CORS allows only localhost/127.0.0.1 browser origins. Set `CORS_ORIGINS` to a comma-separated list if you need stricter origins.
-- Default reply delay is randomized between `5` and `15` seconds.
+## 📦 Production Deployment
 
-## Future Ready
+### Option A: PM2 (Process Manager)
+```bash
+# 1. Build Next.js frontend
+npm run build
 
-The backend is separated enough to add later:
+# 2. Start both services with PM2
+npx pm2 start ecosystem.config.js --env production
 
-- CRM features
-- memory
-- analytics
-- anti-ban logic
-- voice notes
-- image analysis
-- multi-device improvements
+# 3. Save PM2 state for auto-restart on system reboot
+npx pm2 startup
+npx pm2 save
+```
+
+### Option B: Docker Container
+```bash
+# Build Docker images
+docker build --target backend -t whatsapp-ai-backend .
+docker build --target frontend -t whatsapp-ai-frontend .
+
+# Run Backend container with persistent volume
+docker run -d -p 3001:3001 \
+  -v /var/lib/vr-2-runtime:/app/server/data \
+  --name backend whatsapp-ai-backend
+```
+
+---
+
+## 🔒 Security & Best Practices
+
+- **CORS Protection**: Access to backend API routes is restricted strictly to origins configured in `CORS_ORIGINS`.
+- **Authentication**: Dashboard endpoints require JWT HTTP-only cookies or authentication headers.
+- **Data Persistence**: WhatsApp Web sessions, Human Mode pause states, and Scheduled Messages persist in `server/data/` across restarts.
+
+---
+
+## 📜 License
+
+MIT License © 2026 Vigneshwar S
