@@ -11,7 +11,10 @@ A modern, full-stack personal communication automation platform integrating **Wh
 - 📅 **Message Scheduling & Reminders**: Schedule one-time or recurring WhatsApp messages to any contact with date/time pickers, quick AI templates, live countdowns, and automated background execution.
 - 🛑 **Human Mode (Pause AI)**: Pause AI per-chat for manual intervention. Chat pause states persist in storage across server restarts.
 - 💬 **Direct Dashboard Messaging**: Send manual WhatsApp messages to any contact directly from the dashboard UI.
-- 🛡️ **Anti-Ban Protections**: Randomized typing simulation, 5s–15s randomized delays, and automatic exclusion of groups, business contacts, telecom services, and banks (*SBI, HDFC, ICICI*).
+- 🛡️ **Anti-Ban & Human Simulation**:
+  - **Dynamic Typing Simulation**: Character-length calculated typing speeds (4s base + 90ms/char) with continuous 3s refresh loops so `typing...` stays active on the recipient's screen until the message lands.
+  - **Human Delays**: 5s–15s randomized delays to prevent bot pattern detection.
+  - **Smart Filtering**: Automatically filters out groups (`@g.us`), broadcasts, and bank/OTP/telecom notification messages (*SBI, HDFC, ICICI, etc.*).
 - 🎨 **Glassmorphic UI**: Built with Next.js 14, Tailwind CSS, custom design tokens, animated live status indicators, and Socket.io real-time updates.
 
 ---
@@ -21,7 +24,7 @@ A modern, full-stack personal communication automation platform integrating **Wh
 - **Frontend**: Next.js 14, React 18, Tailwind CSS, Socket.io Client, Lucide React
 - **Backend**: Node.js, Express, Socket.io, `whatsapp-web.js` (Puppeteer / Chromium)
 - **AI Integrations**: `@google/generative-ai` (Gemini), `openai` (Groq, OpenRouter, OpenAI)
-- **Process & Deployment**: PM2, Docker (Multi-stage build), dumb-init
+- **Process & Deployment**: PM2, Docker (Multi-stage build), CloudPanel / Nginx Reverse Proxy
 
 ---
 
@@ -50,7 +53,7 @@ vr-2/
 
 ## 📦 Production Deployment
 
-### Option A: PM2 (Process Manager)
+### Option A: PM2 & Nginx (CloudPanel / VPS)
 ```bash
 # 1. Build Next.js frontend
 npm run build
@@ -59,7 +62,6 @@ npm run build
 npx pm2 start ecosystem.config.js --env production
 
 # 3. Save PM2 state for auto-restart on system reboot
-npx pm2 startup
 npx pm2 save
 ```
 
@@ -79,9 +81,9 @@ docker run -d -p 3001:3001 \
 
 ## 🔒 Security & Best Practices
 
-- **CORS Protection**: Access to backend API routes is restricted strictly to origins configured in `CORS_ORIGINS`.
-- **Authentication**: Dashboard endpoints require JWT HTTP-only cookies or authentication headers.
-- **Data Persistence**: WhatsApp Web sessions, Human Mode pause states, and Scheduled Messages persist in `server/data/` across restarts.
+- **CORS & Reverse Proxy**: Same-origin Next.js rewrites and Nginx proxying for HTTPS and WebSocket (`/socket.io/`) without exposing backend ports.
+- **Authentication**: Dashboard endpoints require JWT HTTP-only cookies with auto-detected secure flags.
+- **Data Persistence**: WhatsApp Web sessions, Human Mode pause states, and Scheduled Messages persist across server restarts.
 
 ---
 
