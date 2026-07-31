@@ -12,6 +12,12 @@ A modern, full-stack personal communication automation platform integrating **Wh
 
 ---
 
+## 🖥️ Dashboard Preview
+
+![WhatsApp AI Control Room Dashboard](./public/dashboard-preview.png)
+
+---
+
 ## ✨ Features
 
 - 🤖 **AI Auto-Replies**: Automatic, context-aware casual replies for one-to-one personal chats.
