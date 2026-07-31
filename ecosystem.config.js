@@ -26,7 +26,7 @@ module.exports = {
       // a path into node_modules that may change between installs.
       interpreter: "node",
       script: "node_modules/.bin/next",
-      args: "start",
+      args: "start -p 3005",
       instances: 1,
       autorestart: true,
       watch: false,
@@ -37,11 +37,13 @@ module.exports = {
       merge_logs: true,
       log_date_format: "YYYY-MM-DD HH:mm:ss Z",
       env: {
-        NODE_ENV: "development"
+        NODE_ENV: "development",
+        PORT: 3005
       },
       env_production: {
         NODE_ENV: "production",
-        NEXT_DIST_DIR: ".next-build"
+        NEXT_DIST_DIR: ".next-build",
+        PORT: 3005
       }
     }
   ]
