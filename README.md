@@ -75,20 +75,6 @@ WWEBJS_DATA_ROOT=C:\\tmp\\vr-2-runtime
 
 ---
 
-## 🚀 Getting Started
-
-### 1. Install Dependencies
-```bash
-npm install
-```
-
-### 2. Run in Development Mode
-```bash
-npm run dev
-```
-- **Frontend Dashboard**: `http://localhost:3000`
-- **Backend API**: `http://localhost:3001`
-
 ---
 
 ## 📦 Production Deployment
