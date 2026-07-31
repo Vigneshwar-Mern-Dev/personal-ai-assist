@@ -1,6 +1,14 @@
 # 💬 Personal WhatsApp AI Assistant & Control Room
 
+[![Live Demo](https://img.shields.io/badge/Live_Site-personal--ai--assist.duckdns.org-00C853?style=for-the-badge&logo=vercel)](https://personal-ai-assist.duckdns.org)
+[![Security](https://img.shields.io/badge/SSL-HTTPS_Secure-00B0FF?style=for-the-badge&logo=letsencrypt)](https://personal-ai-assist.duckdns.org)
+[![Node.js](https://img.shields.io/badge/Node.js-v20_LTS-339933?style=for-the-badge&logo=nodedotjs)](https://nodejs.org)
+[![Next.js](https://img.shields.io/badge/Next.js-14_App_Router-000000?style=for-the-badge&logo=nextdotjs)](https://nextjs.org)
+
 A modern, full-stack personal communication automation platform integrating **WhatsApp Web automation**, **Multi-AI provider failover** (`Groq`, `Gemini`, `OpenRouter`, `OpenAI`), **Smart Message Scheduling**, and a **Real-time Glassmorphic Control Dashboard**.
+
+🌐 **Live Application**: [https://personal-ai-assist.duckdns.org](https://personal-ai-assist.duckdns.org)  
+🔑 **Dashboard Login**: [https://personal-ai-assist.duckdns.org/login](https://personal-ai-assist.duckdns.org/login)
 
 ---
 
