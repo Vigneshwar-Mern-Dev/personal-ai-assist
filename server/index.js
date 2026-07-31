@@ -38,6 +38,7 @@ const sessionLimiter = rateLimit({
 
 async function startServer() {
   const app = express();
+  app.set("trust proxy", 1); // Trust first proxy (Nginx/CloudPanel)
   const httpServer = http.createServer(app);
   const port = Number(process.env.PORT || 3001);
 
