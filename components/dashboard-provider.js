@@ -70,8 +70,9 @@ export function DashboardProvider({ children }) {
           
           // Connect socket only after successful auth
           if (!socket) {
-            socket = io(SOCKET_URL, {
-              transports: ["websocket", "polling"],
+            socket = io({
+              path: "/socket.io/",
+              transports: ["polling", "websocket"],
               withCredentials: true
             });
 
