@@ -30,10 +30,10 @@ const apiLimiter = rateLimit({
 // Stricter limiter for sensitive session-mutation endpoints
 const sessionLimiter = rateLimit({
   windowMs: 5 * 60 * 1000, // 5 minutes
-  max: 10,
+  max: 30,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { success: false, message: "Too many session actions, please wait before retrying." }
+  message: { success: false, message: "Too many requests, please wait before retrying." }
 });
 
 async function startServer() {

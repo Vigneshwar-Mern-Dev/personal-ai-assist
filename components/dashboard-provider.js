@@ -120,7 +120,8 @@ export function DashboardProvider({ children }) {
       }
       return response;
     } catch (requestError) {
-      if (requestError.message.toLowerCase().includes("unauthorized") || requestError.message.toLowerCase().includes("session")) {
+      const msg = requestError.message.toLowerCase();
+      if (msg.includes("unauthorized") || msg === "invalid session" || msg === "no token") {
          router.replace("/login");
       }
       setError(requestError.message);

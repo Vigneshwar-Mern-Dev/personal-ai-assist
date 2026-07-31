@@ -42,12 +42,13 @@ function createAuthRouter() {
 
     const token = jwt.sign({ user: username }, JWT_SECRET, { expiresIn: "7d" });
 
+    const isSecure = req.secure || req.headers["x-forwarded-proto"] === "https";
     res.cookie("dashboard_token", token, {
       httpOnly: true,
-      // Set to false for now so you can login via IP/HTTP without SSL
-      secure: false, 
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      secure: isSecure,
+      sameSite: isSecure ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: "/"
     });
 
     res.json({ success: true, token });
