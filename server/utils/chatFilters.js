@@ -26,11 +26,12 @@ function isPersonalChatId(value) {
     return false;
   }
 
-  return chatId.endsWith("@c.us") || chatId.endsWith("@lid");
+  return true;
 }
 
 function isPersonalChat(chat) {
-  return Boolean(chat) && !chat.isGroup && isPersonalChatId(chat);
+  if (!chat) return true;
+  return !chat.isGroup && isPersonalChatId(chat);
 }
 
 const defaultBlockedContactPatterns = [
@@ -98,25 +99,8 @@ function hasBlockedContactName(contactName) {
   );
 }
 
-function isBusinessOrVerifiedContact(contact) {
-  if (!contact) {
-    return false;
-  }
-
-  return Boolean(
-    contact.isBusiness ||
-    contact.isEnterprise ||
-    contact.verifiedName ||
-    contact.verifiedLevel
-  );
-}
-
 function shouldAutoReplyToContact({ chat, contact, contactName }) {
-  if (!isPersonalChat(chat)) {
-    return false;
-  }
-
-  if (isBusinessOrVerifiedContact(contact)) {
+  if (chat && !isPersonalChat(chat)) {
     return false;
   }
 
