@@ -93,10 +93,8 @@ function createOpenAIService() {
     return historyLines.join("\n");
   }
 
-  async function requestModelText({ systemInstruction, prompt, temperature = 0.7, maxTokens = 180 }) {
-    const provider = getProvider();
+  async function executeProviderCall(provider, { systemInstruction, prompt, temperature, maxTokens }) {
     let output = "";
-
     if (provider === "openai" || provider === "openrouter" || provider === "groq") {
       const client =
         provider === "openrouter"
@@ -131,7 +129,7 @@ function createOpenAIService() {
       const response = await result.response;
       output = response.text().trim();
     } else {
-      throw new Error(`Unsupported AI_PROVIDER "${provider}". Use "openai", "openrouter", "groq", or "gemini".`);
+      throw new Error(`Unsupported AI_PROVIDER "${provider}".`);
     }
 
     if (!output) {
@@ -139,6 +137,31 @@ function createOpenAIService() {
     }
 
     return output;
+  }
+
+  async function requestModelText({ systemInstruction, prompt, temperature = 0.7, maxTokens = 180 }) {
+    const primaryProvider = getProvider();
+    const allProviders = ["groq", "gemini", "openrouter", "openai"];
+    // Put primary provider first, followed by others as fallbacks
+    const providerChain = [primaryProvider, ...allProviders.filter((p) => p !== primaryProvider)];
+
+    let lastError = null;
+    for (const provider of providerChain) {
+      // Skip providers whose API key isn't configured
+      if (provider === "groq" && !process.env.GROQ_API_KEY) continue;
+      if (provider === "gemini" && !process.env.GEMINI_API_KEY) continue;
+      if (provider === "openrouter" && !process.env.OPENROUTER_API_KEY) continue;
+      if (provider === "openai" && !process.env.OPENAI_API_KEY) continue;
+
+      try {
+        return await executeProviderCall(provider, { systemInstruction, prompt, temperature, maxTokens });
+      } catch (err) {
+        lastError = err;
+        console.warn(`[AI Provider Fallback] ${provider} failed (${err.message}). Trying next fallback...`);
+      }
+    }
+
+    throw lastError || new Error("All AI providers failed or no valid API keys configured");
   }
 
   function parseJsonObject(value) {

@@ -6,6 +6,7 @@ const logger = require("../utils/logger");
 
 const settingsFilePath = path.join(process.cwd(), "server", "data", "settings.json");
 const messagesFilePath = path.join(process.cwd(), "server", "data", "messages.json");
+const pausedChatsFilePath = path.join(process.cwd(), "server", "data", "paused_chats.json");
 
 const defaultSettings = {
   aiEnabled: false,
@@ -75,16 +76,19 @@ class AppStore extends EventEmitter {
         pendingReplies: []
       },
       chats: [],
-      recentMessages: []
+      recentMessages: [],
+      scheduledMessages: []
     };
     this.pausedChats = new Set();
     this.isSavingMessages = false;
+    this.saveMessagesDebounceTimer = null;
   }
 
   async initialize() {
-    const [savedSettings, savedMessages] = await Promise.all([
+    const [savedSettings, savedMessages, savedPausedChats] = await Promise.all([
       readJsonFile(settingsFilePath, defaultSettings),
-      readJsonFile(messagesFilePath, [])
+      readJsonFile(messagesFilePath, []),
+      readJsonFile(pausedChatsFilePath, [])
     ]);
 
     this.state.settings = {
@@ -93,6 +97,7 @@ class AppStore extends EventEmitter {
     };
 
     this.state.recentMessages = Array.isArray(savedMessages) ? savedMessages : [];
+    this.pausedChats = new Set(Array.isArray(savedPausedChats) ? savedPausedChats : []);
     
     // Reconstruct chats from messages if possible
     this.reconstructChatsFromMessages();
@@ -125,15 +130,29 @@ class AppStore extends EventEmitter {
       .slice(0, 50);
   }
 
-  async saveMessages() {
-    if (this.isSavingMessages) return;
-    this.isSavingMessages = true;
+  saveMessages() {
+    if (this.saveMessagesDebounceTimer) {
+      clearTimeout(this.saveMessagesDebounceTimer);
+    }
+
+    this.saveMessagesDebounceTimer = setTimeout(async () => {
+      if (this.isSavingMessages) return;
+      this.isSavingMessages = true;
+      try {
+        await writeJsonFile(messagesFilePath, this.state.recentMessages);
+      } catch (error) {
+        logger.error("Failed to save messages", { error: error.message });
+      } finally {
+        this.isSavingMessages = false;
+      }
+    }, 2000);
+  }
+
+  async savePausedChats() {
     try {
-      await writeJsonFile(messagesFilePath, this.state.recentMessages);
+      await writeJsonFile(pausedChatsFilePath, Array.from(this.pausedChats));
     } catch (error) {
-      logger.error("Failed to save messages", { error: error.message });
-    } finally {
-      this.isSavingMessages = false;
+      logger.error("Failed to save paused chats", { error: error.message });
     }
   }
 
@@ -145,7 +164,7 @@ class AppStore extends EventEmitter {
     return this.pausedChats.has(chatId);
   }
 
-  toggleChatPause(chatId, isPaused) {
+  async toggleChatPause(chatId, isPaused) {
     if (isPaused) {
       this.pausedChats.add(chatId);
       // If pausing, we should also clear any pending reply in the queue
@@ -153,6 +172,8 @@ class AppStore extends EventEmitter {
     } else {
       this.pausedChats.delete(chatId);
     }
+
+    await this.savePausedChats();
 
     const existingChatIndex = this.state.chats.findIndex((chat) => chat.id === chatId);
     if (existingChatIndex >= 0) {
@@ -173,14 +194,22 @@ class AppStore extends EventEmitter {
       }));
   }
 
+  setScheduledMessages(scheduledMessages) {
+    this.state.scheduledMessages = Array.isArray(scheduledMessages) ? scheduledMessages : [];
+    this.emitSnapshot();
+  }
+
   getSnapshot() {
+    const scheduled = this.state.scheduledMessages || [];
     return {
       ...this.state,
       stats: {
         totalChats: this.state.chats.length,
         unreadChats: this.state.chats.filter((chat) => chat.unreadCount > 0).length,
         aiRepliedCount: this.state.recentMessages.filter((message) => message.aiReplied).length,
-        pendingReplies: this.state.meta.pendingReplies.length
+        pendingReplies: this.state.meta.pendingReplies.length,
+        scheduledPending: scheduled.filter((s) => s.status === "pending").length,
+        scheduledTotal: scheduled.length
       }
     };
   }

@@ -15,6 +15,7 @@ const { requireDashboardAuth } = require("./utils/dashboardAuth");
 const { migrateLegacyRuntimeStorage } = require("./utils/runtimeStorage");
 const { createAppStore } = require("./services/store");
 const { createWhatsAppService } = require("./services/whatsappService");
+const { createScheduleService } = require("./services/scheduleService");
 const logger = require("./utils/logger");
 
 // General limiter for all API routes
@@ -75,6 +76,11 @@ async function startServer() {
     store,
     openAIService
   });
+  const scheduleService = createScheduleService({
+    store,
+    whatsappService
+  });
+  await scheduleService.initialize();
 
   logger.info("Registering authentication routes at /api/auth");
   app.use("/api/auth", createAuthRouter());
@@ -84,7 +90,7 @@ async function startServer() {
 
   app.use("/api", requireDashboardAuth);
   app.use("/api/session", sessionLimiter);
-  app.use("/api", createApiRouter({ store, whatsappService }));
+  app.use("/api", createApiRouter({ store, whatsappService, scheduleService }));
 
   // Centralised error handler — must be defined last, after all routes
   app.use((error, request, response, _next) => {

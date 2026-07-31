@@ -1,9 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
   color-scheme: dark;
+  --accent: #22c55e;
+  --accent-glow: rgba(34, 197, 94, 0.15);
 }
 
 html {
@@ -13,9 +17,11 @@ html {
 body {
   min-height: 100vh;
   margin: 0;
-  color: #dbe3ef;
-  background: #070b12;
-  font-family: "Segoe UI Variable Display", "Segoe UI", "Trebuchet MS", sans-serif;
+  color: #cbd5e1;
+  background: #060a10;
+  font-family: 'Inter', 'Segoe UI Variable Display', 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 a {
@@ -27,50 +33,142 @@ a {
   box-sizing: border-box;
 }
 
+/* Premium scrollbar */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.18);
 }
 
-::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.22);
-  border-radius: 9999px;
+/* Selection */
+::selection {
+  background: rgba(34, 197, 94, 0.25);
+  color: #f0fdf4;
 }
 
 @layer components {
+
+  /* ── Panels ─────────────────────────────────── */
   .panel {
-    @apply rounded-lg border border-white/10 bg-panel/95 shadow-glow;
+    @apply rounded-2xl border border-white/[0.07] bg-panel shadow-glass backdrop-blur-sm;
   }
 
   .panel-soft {
-    @apply rounded-lg border border-white/10 bg-panelSoft/70 shadow-glow;
+    @apply rounded-2xl border border-white/[0.06] bg-panelSoft shadow-card;
   }
 
+  .panel-card {
+    @apply rounded-xl border border-white/[0.06] bg-panelMid shadow-card transition duration-200;
+  }
+
+  .panel-card:hover {
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+
+  /* ── Buttons ─────────────────────────────────── */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-slate-950 shadow-glowAccent transition-all duration-200 hover:brightness-110 hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-5 py-2.5 text-sm font-semibold text-slate-200 backdrop-blur-sm transition-all duration-200 hover:border-white/20 hover:bg-white/[0.07] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-5 py-2.5 text-sm font-semibold text-red-300 transition-all duration-200 hover:border-red-500/40 hover:bg-red-500/20 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  /* Legacy compat */
   .action-button {
-    @apply inline-flex items-center justify-center rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60;
+    @apply btn-primary;
   }
-
   .action-button-secondary {
-    @apply inline-flex items-center justify-center rounded-lg border border-white/10 bg-slate-900/70 px-4 py-2.5 text-sm font-semibold text-slate-100 transition hover:border-slate-400 hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-60;
+    @apply btn-secondary;
   }
 
+  /* ── Inputs ─────────────────────────────────── */
   .input-field {
-    @apply w-full rounded-lg border border-white/10 bg-slate-950/80 px-3.5 py-2.5 text-sm text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-accent;
+    @apply w-full rounded-xl border border-white/[0.08] bg-slate-950/60 px-4 py-2.5 text-sm text-slate-100 outline-none transition duration-200 placeholder:text-slate-500 focus:border-accent/50 focus:ring-2 focus:ring-accent/10;
   }
 
   .textarea-field {
     @apply input-field min-h-40 resize-y;
   }
 
+  /* ── Page intro ─────────────────────────────── */
   .page-intro {
-    @apply rounded-lg border border-white/10 bg-slate-900/70 p-5 shadow-glow sm:p-6;
+    @apply rounded-2xl border border-white/[0.06] bg-gradient-to-br from-panelMid to-panelSoft p-5 sm:p-6 shadow-card;
   }
 
+  /* ── Subtle grid overlay ────────────────────── */
   .subtle-grid {
     background-image:
-      linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
-    background-size: 28px 28px;
-    background-position: center;
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 32px 32px;
   }
+
+  /* ── Stat badge ──────────────────────────────── */
+  .stat-pill {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1 text-xs font-medium text-slate-300;
+  }
+
+  /* ── Tag chips ───────────────────────────────── */
+  .chip-green  { @apply rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-400; }
+  .chip-amber  { @apply rounded-full bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-300; }
+  .chip-red    { @apply rounded-full bg-red-500/10 border border-red-500/20 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-red-400; }
+  .chip-slate  { @apply rounded-full bg-slate-700/50 border border-white/[0.06] px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400; }
 }
+
+/* ── Animated accent line at the very top ──────── */
+.top-glow-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #22c55e 40%, #16a34a 60%, transparent);
+  z-index: 100;
+  opacity: 0.7;
+}
+
+/* ── Sidebar nav active glow ────────────────────── */
+.nav-item-active {
+  background: linear-gradient(135deg, rgba(34,197,94,0.12) 0%, rgba(34,197,94,0.05) 100%);
+  border-color: rgba(34,197,94,0.3) !important;
+}
+
+/* ── Glass card shine effect ────────────────────── */
+.glass-shine::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 50%);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* ── Pulsing live dot ───────────────────────────── */
+@keyframes livePing {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50%       { transform: scale(1.6); opacity: 0; }
+}
+.live-dot::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: livePing 1.8s ease-in-out infinite;
+  opacity: 0.4;
+}
+.live-dot { position: relative; }

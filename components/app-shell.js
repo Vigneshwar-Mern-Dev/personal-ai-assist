@@ -7,11 +7,52 @@ import { StatusBadge } from "@/components/status-badge";
 import { classes } from "@/lib/classes";
 
 const navItems = [
-  { href: "/chats", label: "Chats" },
-  { href: "/auto-reply", label: "Replies" },
-  { href: "/schedule", label: "Schedule" },
-  { href: "/settings", label: "Settings" },
-  { href: "/session", label: "Session" }
+  {
+    href: "/chats",
+    label: "Chats",
+    icon: (
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+    )
+  },
+  {
+    href: "/auto-reply",
+    label: "Auto Reply",
+    icon: (
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+      </svg>
+    )
+  },
+  {
+    href: "/schedule",
+    label: "Schedule",
+    icon: (
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+    )
+  },
+  {
+    href: "/settings",
+    label: "Settings",
+    icon: (
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M20 12h2M2 12h2M17.66 17.66l-1.41-1.41M6.34 6.34l-1.41-1.41M19.07 19.07l-1.41-1.41M4.93 19.07l1.41-1.41"/>
+      </svg>
+    )
+  },
+  {
+    href: "/session",
+    label: "Session",
+    icon: (
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
+      </svg>
+    )
+  }
 ];
 
 export function AppShell({ children }) {
@@ -19,101 +60,150 @@ export function AppShell({ children }) {
   const { snapshot, error, actions } = useDashboard();
 
   if (pathname === "/login") {
-    return <main>{children}</main>;
+    return <>{children}</>;
   }
 
+  const isConnected = snapshot.status.value === "connected";
+
   return (
-    <div className="min-h-screen border-t border-accent/40">
-      <div className="mx-auto flex min-h-screen max-w-[1500px] flex-col lg:flex-row">
-        <aside className="border-b border-white/10 bg-slate-950/80 p-4 lg:sticky lg:top-0 lg:h-screen lg:w-72 lg:border-b-0 lg:border-r lg:p-5">
-          <div className="flex items-start justify-between gap-4 lg:block">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-accent">Personal Chat</p>
-              <h1 className="mt-2 text-2xl font-semibold text-white">Control Room</h1>
-              <p className="mt-2 max-w-md text-sm leading-6 text-slate-400 lg:max-w-none">
-                WhatsApp auto replies for direct personal chats.
-              </p>
+    <div className="min-h-screen bg-shell">
+      {/* Top glow bar */}
+      <div className="top-glow-bar" />
+
+      <div className="mx-auto flex min-h-screen max-w-[1600px] flex-col lg:flex-row">
+
+        {/* ── Sidebar ─────────────────────────────────────── */}
+        <aside className="relative flex-shrink-0 border-b border-white/[0.06] bg-panel/80 backdrop-blur-xl lg:sticky lg:top-0 lg:h-screen lg:w-72 lg:border-b-0 lg:border-r lg:border-white/[0.06] lg:flex lg:flex-col">
+
+          {/* Sidebar top noise texture */}
+          <div className="pointer-events-none absolute inset-0 opacity-30 subtle-grid rounded-none" />
+
+          <div className="relative flex flex-col h-full p-5">
+
+            {/* Brand */}
+            <div className="flex items-center gap-3 pb-5 border-b border-white/[0.06]">
+              <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-accent/20 to-accent/5 border border-accent/20 shadow-glowAccent">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                </svg>
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-accent/80">Personal Chat</p>
+                <p className="mt-0.5 text-base font-semibold text-white truncate">Control Room</p>
+              </div>
             </div>
-            <div className="lg:mt-5">
+
+            {/* Status badge */}
+            <div className="mt-4">
               <StatusBadge status={snapshot.status.value} />
             </div>
-          </div>
 
-          <nav className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-1">
-            {navItems.map((item) => {
-              const active = item.href === "/chats" ? pathname === "/" || pathname === "/chats" : pathname === item.href;
+            {/* Nav */}
+            <nav className="mt-5 flex flex-col gap-1">
+              {navItems.map((item) => {
+                const active = item.href === "/chats"
+                  ? pathname === "/" || pathname === "/chats"
+                  : pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={classes(
+                      "group flex items-center gap-3 rounded-xl border px-3.5 py-2.5 text-sm font-medium transition-all duration-200",
+                      active
+                        ? "nav-item-active border-accent/30 text-white"
+                        : "border-transparent text-slate-400 hover:border-white/[0.06] hover:bg-white/[0.03] hover:text-slate-200"
+                    )}
+                  >
+                    <span className={classes("transition-colors", active ? "text-accent" : "text-slate-500 group-hover:text-slate-300")}>
+                      {item.icon}
+                    </span>
+                    <span>{item.label}</span>
+                    {active && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-accent shadow-glowAccent" />}
+                  </Link>
+                );
+              })}
+            </nav>
 
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={classes(
-                    "flex items-center justify-between rounded-lg border px-3 py-2.5 text-sm transition",
-                    active
-                      ? "border-accent/50 bg-accent/10 text-white"
-                      : "border-white/10 bg-slate-900/50 text-slate-300 hover:border-slate-500 hover:text-white"
-                  )}
+            {/* Account card */}
+            <div className="mt-auto pt-5">
+              <div className="rounded-xl border border-white/[0.06] bg-panelMid/60 p-4">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">Account</p>
+                <p className="mt-2 truncate text-sm font-medium text-slate-200">
+                  {snapshot.status.clientName || "Not connected"}
+                </p>
+
+                {/* Stats grid */}
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <Metric label="Chats" value={String(snapshot.stats.totalChats)} color="text-sky" />
+                  <Metric label="Unread" value={String(snapshot.stats.unreadChats)} color="text-amber-400" />
+                  <Metric label="AI" value={snapshot.settings.aiEnabled ? "On" : "Off"} color={snapshot.settings.aiEnabled ? "text-accent" : "text-red-400"} />
+                  <Metric label="Sent" value={String(snapshot.stats.aiRepliedCount)} color="text-accent" />
+                </div>
+
+                {/* Logout */}
+                <button
+                  onClick={actions.logout}
+                  className="mt-4 w-full flex items-center justify-center gap-2 rounded-xl border border-white/[0.05] bg-white/[0.03] py-2 text-xs font-medium text-slate-500 transition-all duration-200 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20"
                 >
-                  <span className="font-medium">{item.label}</span>
-                  {active ? <span className="h-2.5 w-2.5 rounded-full bg-accent" /> : null}
-                </Link>
-              );
-            })}
-          </nav>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                  </svg>
+                  Sign out
+                </button>
+              </div>
 
-          <div className="mt-5 rounded-lg border border-white/10 bg-slate-900/60 p-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Account</p>
-            <p className="mt-2 truncate text-sm text-slate-200">
-              {snapshot.status.clientName || "Not connected"}
-            </p>
-            <div className="mt-4 grid grid-cols-2 gap-2 text-sm text-slate-300">
-              <Metric label="Chats" value={String(snapshot.stats.totalChats)} />
-              <Metric label="Unread" value={String(snapshot.stats.unreadChats)} />
-              <Metric label="Auto" value={snapshot.settings.aiEnabled ? "On" : "Off"} />
-              <Metric label="Sent" value={String(snapshot.stats.aiRepliedCount)} />
+              {error && (
+                <div className="mt-3 rounded-xl border border-red-500/20 bg-red-500/8 p-3 text-xs leading-5 text-red-300">
+                  {error}
+                </div>
+              )}
             </div>
-            
-            <button 
-              onClick={actions.logout}
-              className="mt-4 w-full flex items-center justify-center gap-2 rounded-lg border border-white/5 bg-white/5 py-2 text-xs font-medium text-slate-400 transition hover:bg-red-500/10 hover:text-red-300 hover:border-red-500/20"
-            >
-              Logout Session
-            </button>
           </div>
-
-          {error ? (
-            <div className="mt-4 rounded-lg border border-danger/40 bg-danger/10 p-3 text-sm leading-6 text-red-200">
-              {error}
-            </div>
-          ) : null}
         </aside>
 
-        <main className="min-w-0 flex-1 p-4 sm:p-5 lg:p-7">
-          <div className="mb-5 flex flex-col gap-3 border-b border-white/10 pb-5 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm text-slate-400">Realtime dashboard</p>
-              <p className="mt-1 text-xl font-semibold text-white">
-                {snapshot.settings.aiEnabled ? "Auto replies are active" : "Auto replies are paused"}
+        {/* ── Main content ──────────────────────────────────── */}
+        <main className="min-w-0 flex-1 flex flex-col">
+          {/* Top bar */}
+          <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-white/[0.06] bg-shell/80 px-5 py-3.5 backdrop-blur-xl lg:px-7">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className={classes(
+                "relative flex h-2 w-2 rounded-full",
+                isConnected ? "bg-accent live-dot" : "bg-slate-600"
+              )} />
+              <p className="text-sm text-slate-400 truncate">
+                {snapshot.settings.aiEnabled
+                  ? <span>Auto reply is <span className="text-accent font-medium">active</span></span>
+                  : <span>Auto reply is <span className="text-slate-500 font-medium">paused</span></span>
+                }
               </p>
             </div>
-            {error ? (
-              <span className="rounded-lg border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-red-200">Needs attention</span>
-            ) : (
-              <span className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-300">Live</span>
-            )}
+            <div className="flex items-center gap-2 text-xs text-slate-500 shrink-0">
+              {error ? (
+                <span className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-red-300">⚠ Needs attention</span>
+              ) : (
+                <span className="rounded-lg border border-accent/20 bg-accent/8 px-3 py-1.5 text-accent font-medium">● Live</span>
+              )}
+            </div>
           </div>
-          {children}
+
+          {/* Page content */}
+          <div className="flex-1 p-4 sm:p-5 lg:p-7 animate-fade-in">
+            {children}
+          </div>
         </main>
       </div>
     </div>
   );
 }
 
-function Metric({ label, value }) {
+function Metric({ label, value, color = "text-white" }) {
   return (
-    <div className="rounded-lg border border-white/10 bg-slate-950/70 p-3">
-      <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">{label}</p>
-      <p className="mt-2 text-lg font-semibold text-white">{value}</p>
+    <div className="rounded-lg border border-white/[0.05] bg-shell/60 p-2.5">
+      <p className="text-[9px] uppercase tracking-[0.2em] text-slate-600">{label}</p>
+      <p className={classes("mt-1 text-base font-bold", color)}>{value}</p>
     </div>
   );
 }

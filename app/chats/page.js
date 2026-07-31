@@ -20,50 +20,58 @@ export default function ChatsPage() {
       !normalizedQuery ||
       chat.name?.toLowerCase().includes(normalizedQuery) ||
       chat.lastMessage?.toLowerCase().includes(normalizedQuery);
-
-    if (!matchesQuery) {
-      return false;
-    }
-
-    if (filter === "unread") {
-      return (chat.unreadCount || 0) > 0;
-    }
-
-    if (filter === "pending") {
-      return Boolean(chat.pendingReply);
-    }
-
+    if (!matchesQuery) return false;
+    if (filter === "unread") return (chat.unreadCount || 0) > 0;
+    if (filter === "pending") return Boolean(chat.pendingReply);
     return true;
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-slide-up">
       <PageIntro
         eyebrow="Chats"
         title="Personal Conversations"
-        description="Direct one-to-one chats only. Groups, channels, newsletters, broadcasts, and status threads are ignored."
+        description="Direct one-to-one chats only. Groups, channels, and broadcasts are ignored."
       />
 
       <div className="grid gap-6 xl:grid-cols-[1.1fr_1fr]">
-        <Panel title="Chats" description="Last active direct chats with unread counts and reply status.">
-          <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <input
-              className="input-field lg:max-w-sm"
-              placeholder="Search by name or message"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-            />
-
+        {/* Chats panel */}
+        <Panel
+          title="Active Chats"
+          description="Last active personal chats with unread counts and reply status."
+        >
+          {/* Search + filters */}
+          <div className="mb-5 space-y-3">
+            <div className="relative">
+              <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-600">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+              </span>
+              <input
+                className="input-field pl-10"
+                placeholder="Search by name or message…"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+            </div>
             <div className="flex flex-wrap gap-2">
-              <FilterButton active={filter === "all"} label={`All (${snapshot.chats.length})`} onClick={() => setFilter("all")} />
+              <FilterButton
+                active={filter === "all"}
+                label={`All`}
+                count={snapshot.chats.length}
+                onClick={() => setFilter("all")}
+              />
               <FilterButton
                 active={filter === "unread"}
-                label={`Unread (${snapshot.stats.unreadChats})`}
+                label="Unread"
+                count={snapshot.stats.unreadChats}
                 onClick={() => setFilter("unread")}
               />
               <FilterButton
                 active={filter === "pending"}
-                label={`Queued (${snapshot.stats.pendingReplies})`}
+                label="Queued"
+                count={snapshot.stats.pendingReplies}
                 onClick={() => setFilter("pending")}
               />
             </div>
@@ -72,7 +80,11 @@ export default function ChatsPage() {
           <ChatList chats={filteredChats} />
         </Panel>
 
-        <Panel title="Latest Messages" description="Quick feed of the newest incoming and outgoing messages.">
+        {/* Messages panel */}
+        <Panel
+          title="Latest Messages"
+          description="Real-time feed of the newest incoming and outgoing messages."
+        >
           <RecentMessagesList messages={snapshot.recentMessages} />
         </Panel>
       </div>
@@ -80,19 +92,25 @@ export default function ChatsPage() {
   );
 }
 
-function FilterButton({ active, label, onClick }) {
+function FilterButton({ active, label, count, onClick }) {
   return (
     <button
-      className={classes(
-        "rounded-lg border px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition",
-        active
-          ? "border-accent/40 bg-accentSoft text-white"
-          : "border-white/10 bg-slate-950/40 text-slate-300 hover:border-slate-400 hover:text-white"
-      )}
       type="button"
       onClick={onClick}
+      className={classes(
+        "inline-flex items-center gap-2 rounded-lg border px-3.5 py-2 text-xs font-semibold transition-all duration-200",
+        active
+          ? "border-accent/30 bg-accent/10 text-accent"
+          : "border-white/[0.07] bg-white/[0.03] text-slate-400 hover:border-white/15 hover:text-slate-200"
+      )}
     >
       {label}
+      <span className={classes(
+        "rounded-md px-1.5 py-0.5 text-[10px] font-bold",
+        active ? "bg-accent/20 text-accent" : "bg-white/[0.06] text-slate-500"
+      )}>
+        {count}
+      </span>
     </button>
   );
 }

@@ -1,6 +1,7 @@
 const express = require("express");
+const { asyncHandler } = require("../utils/asyncHandler");
 
-function createChatRoutes({ store }) {
+function createChatRoutes({ store, whatsappService }) {
   const router = express.Router();
 
   router.get("/", (request, response) => {
@@ -12,35 +13,56 @@ function createChatRoutes({ store }) {
     });
   });
 
-  router.post("/:chatId/pause", (request, response) => {
+  router.post("/:chatId/pause", asyncHandler(async (request, response) => {
     const { chatId } = request.params;
     if (!chatId) {
       return response.status(400).json({ success: false, message: "Chat ID required" });
     }
     
-    store.toggleChatPause(chatId, true);
+    await store.toggleChatPause(chatId, true);
     
     response.json({
       success: true,
       message: "AI paused for this chat",
       snapshot: store.getSnapshot()
     });
-  });
+  }));
 
-  router.post("/:chatId/resume", (request, response) => {
+  router.post("/:chatId/resume", asyncHandler(async (request, response) => {
     const { chatId } = request.params;
     if (!chatId) {
       return response.status(400).json({ success: false, message: "Chat ID required" });
     }
     
-    store.toggleChatPause(chatId, false);
+    await store.toggleChatPause(chatId, false);
     
     response.json({
       success: true,
       message: "AI resumed for this chat",
       snapshot: store.getSnapshot()
     });
-  });
+  }));
+
+  router.post("/:chatId/send", asyncHandler(async (request, response) => {
+    const { chatId } = request.params;
+    const { message } = request.body || {};
+
+    if (!chatId || !message) {
+      return response.status(400).json({ success: false, message: "Chat ID and message text are required" });
+    }
+
+    if (!whatsappService || typeof whatsappService.sendManualMessage !== "function") {
+      return response.status(500).json({ success: false, message: "WhatsApp service unavailable" });
+    }
+
+    await whatsappService.sendManualMessage(chatId, message);
+
+    response.json({
+      success: true,
+      message: "Message sent successfully",
+      snapshot: store.getSnapshot()
+    });
+  }));
 
   return router;
 }

@@ -293,6 +293,35 @@ function createWhatsAppService({ store, openAIService }) {
     await reconnect();
   }
 
+  async function sendManualMessage(chatId, text) {
+    if (!client) {
+      throw new Error("WhatsApp client is not connected");
+    }
+
+    const safeText = String(text || "").trim();
+    if (!safeText) {
+      throw new Error("Message text cannot be empty");
+    }
+
+    await client.sendMessage(chatId, safeText);
+
+    const existingChat = store.getSnapshot().chats.find((c) => c.id === chatId);
+    const chatName = existingChat?.name || chatId;
+
+    store.recordMessage({
+      id: `manual-${Date.now()}`,
+      chatId,
+      chatName,
+      body: safeText,
+      createdAt: new Date().toISOString(),
+      unreadCount: 0,
+      direction: "outgoing",
+      aiReplied: false
+    });
+
+    return true;
+  }
+
   return {
     buildChatSnapshot,
     getClient: () => client,
@@ -300,7 +329,8 @@ function createWhatsAppService({ store, openAIService }) {
     logout,
     reconnect,
     regenerateQr,
-    resetSession
+    resetSession,
+    sendManualMessage
   };
 }
 

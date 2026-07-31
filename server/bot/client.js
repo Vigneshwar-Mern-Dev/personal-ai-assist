@@ -23,7 +23,9 @@ function createWhatsAppClient() {
         "--disable-background-timer-throttling",
         "--disable-backgrounding-occluded-windows",
         "--disable-renderer-backgrounding",
-        "--no-first-run"
+        "--no-first-run",
+        '--js-flags="--max-old-space-size=256"',
+        "--disable-component-update"
       ]
     }
   });

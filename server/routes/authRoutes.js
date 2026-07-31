@@ -4,24 +4,31 @@ const bcrypt = require("bcryptjs");
 const { asyncHandler } = require("../utils/asyncHandler");
 
 const JWT_SECRET = process.env.JWT_SECRET || "fallback-secret-change-it";
-const DASHBOARD_USERNAME = process.env.DASHBOARD_USERNAME || "admin";
-const DASHBOARD_PASSWORD_HASH = process.env.DASHBOARD_PASSWORD_HASH;
 
 function createAuthRouter() {
   const router = express.Router();
 
   router.post("/login", asyncHandler(async (req, res) => {
     const { username, password } = req.body;
+    const configuredUsername = process.env.DASHBOARD_USERNAME || "admin";
+    const configuredPassword = process.env.DASHBOARD_PASSWORD;
+    const configuredHash = process.env.DASHBOARD_PASSWORD_HASH;
 
-    if (!DASHBOARD_PASSWORD_HASH) {
+    if (!configuredPassword && !configuredHash) {
        return res.status(500).json({ success: false, message: "Server auth misconfigured" });
     }
 
-    if (username !== DASHBOARD_USERNAME) {
+    if (username !== configuredUsername) {
       return res.status(401).json({ success: false, message: "Invalid credentials" });
     }
 
-    const isMatch = await bcrypt.compare(password, DASHBOARD_PASSWORD_HASH);
+    let isMatch = false;
+    if (configuredPassword) {
+      isMatch = (password === configuredPassword);
+    } else if (configuredHash) {
+      isMatch = await bcrypt.compare(password, configuredHash);
+    }
+
     if (!isMatch) {
       return res.status(401).json({ success: false, message: "Invalid credentials" });
     }
