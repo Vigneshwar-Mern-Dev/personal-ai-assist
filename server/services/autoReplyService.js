@@ -182,6 +182,15 @@ function createAutoReplyService({ store, openAIService, getClient }) {
         logger.warn("Could not fetch chat object by ID during flush, proceeding with direct send", { chatId, error: err?.message || String(err) });
       }
 
+      // Start typing simulation immediately so WhatsApp recipient sees "typing..." while AI thinks & delays
+      if (settings.typingSimulation && chat && typeof chat.sendStateTyping === "function") {
+        try {
+          await chat.sendStateTyping();
+        } catch (err) {
+          logger.warn("Typing simulation start error ignored", { chatId, error: err?.message || String(err) });
+        }
+      }
+
       const conversationHistory = store.getRecentMessagesForChat(chatId, 10);
       const scriptedReply = await resolveScriptedReply({
         messageText: combinedMessage,
@@ -208,13 +217,14 @@ function createAutoReplyService({ store, openAIService, getClient }) {
         settings.replyDelayMinSeconds * 1000,
         settings.replyDelayMaxSeconds * 1000
       );
-      const remainingDelay = Math.max(0, targetDelay - (Date.now() - startedAt));
+      const remainingDelay = Math.max(1000, targetDelay - (Date.now() - startedAt));
 
+      // Refresh typing status during delay
       if (settings.typingSimulation && chat && typeof chat.sendStateTyping === "function") {
         try {
           await chat.sendStateTyping();
         } catch (err) {
-          logger.warn("Typing simulation error ignored", { chatId });
+          // Ignore refresh errors
         }
       }
 
