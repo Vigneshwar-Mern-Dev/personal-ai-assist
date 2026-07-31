@@ -59,6 +59,7 @@ async function startServer() {
 
   // Bound body size — 64 KB is more than enough for any settings payload
   app.use(express.json({ limit: "64kb" }));
+  app.use(express.urlencoded({ extended: true, limit: "64kb" }));
 
   // Health check is intentionally outside auth and rate limiting so that
   // AWS ALB / ECS health probes always succeed without credentials.
@@ -96,17 +97,14 @@ async function startServer() {
   app.use((error, request, response, _next) => {
     logger.error("API Error", {
       message: error.message,
-      stack: process.env.NODE_ENV !== "production" ? error.stack : undefined,
+      stack: error.stack,
       path: request.path,
       method: request.method
     });
 
     response.status(error.status || 500).json({
       success: false,
-      message:
-        process.env.NODE_ENV === "production"
-          ? "Internal server error"
-          : error.message || "Internal server error"
+      message: error.message || "Internal server error"
     });
   });
 

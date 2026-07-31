@@ -9,13 +9,19 @@ function createAuthRouter() {
   const router = express.Router();
 
   router.post("/login", asyncHandler(async (req, res) => {
-    const { username, password } = req.body;
+    const body = req.body || {};
+    const username = String(body.username || "").trim();
+    const password = String(body.password || "").trim();
+
+    if (!username || !password) {
+      return res.status(400).json({ success: false, message: "Username and password are required" });
+    }
+
     const configuredUsername = (process.env.DASHBOARD_USERNAME || "Vignesh").trim();
     const configuredPassword = process.env.DASHBOARD_PASSWORD || (!process.env.DASHBOARD_PASSWORD_HASH ? "Vignesh123" : "");
     const configuredHash = process.env.DASHBOARD_PASSWORD_HASH;
 
-    const providedUser = String(username || "").trim();
-    const isUserValid = providedUser.toLowerCase() === configuredUsername.toLowerCase() || providedUser.toLowerCase() === "vignesh" || providedUser.toLowerCase() === "admin";
+    const isUserValid = username.toLowerCase() === configuredUsername.toLowerCase() || username.toLowerCase() === "vignesh" || username.toLowerCase() === "admin";
 
     if (!isUserValid) {
       return res.status(401).json({ success: false, message: "Invalid credentials" });
