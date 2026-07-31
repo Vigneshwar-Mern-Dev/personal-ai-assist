@@ -48,35 +48,6 @@ vr-2/
 
 ---
 
-## 🔑 Environment Configuration (`.env`)
-
-Create a `.env` file in the root directory:
-
-```env
-PORT=3001
-DASHBOARD_USERNAME=Vignesh
-DASHBOARD_PASSWORD=Vignesh123
-DASHBOARD_PASSWORD_HASH=$2b$10$...
-JWT_SECRET=your_super_secret_jwt_key
-CORS_ORIGINS=http://localhost:3000
-
-# AI Provider Configuration (groq | gemini | openrouter | openai)
-AI_PROVIDER=groq
-GROQ_API_KEY=gsk_your_groq_key_here
-GROQ_MODEL=llama-3.1-8b-instant
-
-OPENROUTER_API_KEY=
-GEMINI_API_KEY=
-OPENAI_API_KEY=
-
-# Persistent Session Path
-WWEBJS_DATA_ROOT=C:\\tmp\\vr-2-runtime
-```
-
----
-
----
-
 ## 📦 Production Deployment
 
 ### Option A: PM2 (Process Manager)
