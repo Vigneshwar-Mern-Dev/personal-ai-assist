@@ -95,20 +95,35 @@ function createOpenAIService() {
 
   async function executeProviderCall(provider, { systemInstruction, prompt, temperature, maxTokens }) {
     let output = "";
-    if (provider === "openai" || provider === "openrouter" || provider === "groq") {
-      const client =
-        provider === "openrouter"
-          ? getOpenRouterClient()
-          : provider === "groq"
-            ? getGroqClient()
-            : getOpenAIClient();
+    if (provider === "openrouter") {
+      const client = getOpenRouterClient();
+      const openRouterModel = process.env.OPENROUTER_MODEL;
+      const modelPayload = openRouterModel
+        ? { model: openRouterModel }
+        : {
+            models: [
+              "meta-llama/llama-3.3-70b-instruct:free",
+              "deepseek/deepseek-r1:free",
+              "google/gemma-2-9b-it:free",
+              "qwen/qwen-2.5-72b-instruct:free"
+            ]
+          };
+
       const completion = await client.chat.completions.create({
-        model:
-          provider === "openrouter"
-            ? process.env.OPENROUTER_MODEL || "openai/gpt-4o-mini"
-            : provider === "groq"
-              ? process.env.GROQ_MODEL || "llama-3.1-8b-instant"
-              : process.env.OPENAI_MODEL || "gpt-4.1-mini",
+        ...modelPayload,
+        messages: [
+          { role: "system", content: systemInstruction },
+          { role: "user", content: prompt }
+        ],
+        temperature,
+        max_tokens: maxTokens
+      });
+
+      output = completion.choices?.[0]?.message?.content?.trim() || "";
+    } else if (provider === "openai" || provider === "groq") {
+      const client = provider === "groq" ? getGroqClient() : getOpenAIClient();
+      const completion = await client.chat.completions.create({
+        model: provider === "groq" ? process.env.GROQ_MODEL || "llama-3.1-8b-instant" : process.env.OPENAI_MODEL || "gpt-4.1-mini",
         messages: [
           { role: "system", content: systemInstruction },
           { role: "user", content: prompt }
