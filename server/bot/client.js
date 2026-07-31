@@ -8,8 +8,8 @@ function createWhatsAppClient() {
       dataPath: authPath
     }),
     webVersionCache: {
-      type: "local",
-      path: cachePath
+      type: "remote",
+      remotePath: "https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.3000.1014111620-alpha.html"
     },
     puppeteer: {
       headless: true,

@@ -161,18 +161,20 @@ function createWhatsAppService({ store, openAIService }) {
         store.resetReconnectAttempts();
         store.setConnectedClient(currentClient.info || {});
         startChatSyncLoop();
-        await buildChatSnapshot();
+        await buildChatSnapshot().catch((err) => {
+          logger.warn("Initial chat sync non-fatal warning", { error: err?.message || String(err) });
+        });
         logger.info("WhatsApp client ready", { clientName: currentClient.info?.pushname });
       } catch (error) {
-        logger.error("Failed to prepare WhatsApp client", { error: error.message });
-        store.setLastError(error.message || "Failed to prepare WhatsApp client");
+        logger.error("Failed to prepare WhatsApp client", { error: error?.message || String(error) });
+        store.setLastError(error?.message || "Failed to prepare WhatsApp client");
       }
     });
 
     currentClient.on("auth_failure", (message) => {
-      logger.warn("WhatsApp auth failure", { message });
+      logger.warn("WhatsApp auth failure", { message: String(message) });
       store.updateStatus("disconnected", {
-        lastError: message || "Authentication failed"
+        lastError: String(message || "Authentication failed")
       });
       scheduleReconnect("Authentication failed");
     });
@@ -190,8 +192,8 @@ function createWhatsAppService({ store, openAIService }) {
       try {
         await autoReplyService.handleIncomingMessage(message);
       } catch (error) {
-        logger.error("Failed to process incoming message", { error: error.message });
-        store.setLastError(error.message || "Failed to process message");
+        logger.error("Failed to process incoming message", { error: error?.message || String(error) });
+        store.setLastError(error?.message || "Failed to process message");
       }
     });
   }

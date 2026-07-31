@@ -24,9 +24,22 @@ function createAutoReplyService({ store, openAIService, getClient }) {
       return;
     }
 
-    const [chat, contact] = await Promise.all([message.getChat(), message.getContact()]);
+    let chat = null;
+    let contact = null;
 
-    if (!isPersonalChat(chat)) {
+    try {
+      chat = await message.getChat();
+    } catch (err) {
+      logger.warn("Failed to get chat object for incoming message", { chatId: message.from, error: err?.message || String(err) });
+    }
+
+    try {
+      contact = await message.getContact();
+    } catch (err) {
+      logger.warn("Failed to get contact object for incoming message", { chatId: message.from, error: err?.message || String(err) });
+    }
+
+    if (chat && !isPersonalChat(chat)) {
       logger.info("Ignored non-personal chat object", {
         chatId: chat.id?._serialized || message.from
       });
@@ -34,23 +47,23 @@ function createAutoReplyService({ store, openAIService, getClient }) {
     }
 
     const contactName =
-      contact.pushname ||
-      contact.name ||
-      chat.name ||
-      contact.number ||
-      message.from;
+      contact?.pushname ||
+      contact?.name ||
+      chat?.name ||
+      contact?.number ||
+      (message.from ? message.from.split("@")[0] : "Contact");
 
     const incomingTimestamp = message.timestamp
       ? new Date(message.timestamp * 1000).toISOString()
       : new Date().toISOString();
 
     store.recordMessage({
-      id: message.id.id,
+      id: message.id?.id || `msg-${Date.now()}`,
       chatId: message.from,
       chatName: contactName,
       body,
       createdAt: incomingTimestamp,
-      unreadCount: chat.unreadCount || 0,
+      unreadCount: chat?.unreadCount || 1,
       direction: "incoming",
       aiReplied: false
     });
@@ -58,6 +71,7 @@ function createAutoReplyService({ store, openAIService, getClient }) {
     const settings = store.getSettings();
 
     if (!settings.aiEnabled) {
+      logger.info("Auto-reply disabled in settings", { chatId: message.from });
       return;
     }
 
@@ -66,7 +80,7 @@ function createAutoReplyService({ store, openAIService, getClient }) {
       return;
     }
 
-    if (!shouldAutoReplyToContact({ chat, contact, contactName })) {
+    if (chat && contact && !shouldAutoReplyToContact({ chat, contact, contactName })) {
       logger.info("Skipped auto-reply for protected contact", {
         contactName,
         chatId: message.from
@@ -74,12 +88,18 @@ function createAutoReplyService({ store, openAIService, getClient }) {
       return;
     }
 
+    logger.info("Queueing auto-reply for incoming message", {
+      chatId: message.from,
+      contactName,
+      body
+    });
+
     queueReply({
       chatId: message.from,
-      messageId: message.id.id,
+      messageId: message.id?.id || `msg-${Date.now()}`,
       body,
       chatName: contactName,
-      unreadCount: chat.unreadCount || 0
+      unreadCount: chat?.unreadCount || 1
     });
   }
 
@@ -156,7 +176,12 @@ function createAutoReplyService({ store, openAIService, getClient }) {
     let chat = null;
 
     try {
-      chat = await client.getChatById(chatId);
+      try {
+        chat = await client.getChatById(chatId);
+      } catch (err) {
+        logger.warn("Could not fetch chat object by ID during flush, proceeding with direct send", { chatId, error: err?.message || String(err) });
+      }
+
       const conversationHistory = store.getRecentMessagesForChat(chatId, 10);
       const scriptedReply = await resolveScriptedReply({
         messageText: combinedMessage,
@@ -185,15 +210,23 @@ function createAutoReplyService({ store, openAIService, getClient }) {
       );
       const remainingDelay = Math.max(0, targetDelay - (Date.now() - startedAt));
 
-      if (settings.typingSimulation && typeof chat.sendStateTyping === "function") {
-        await chat.sendStateTyping();
+      if (settings.typingSimulation && chat && typeof chat.sendStateTyping === "function") {
+        try {
+          await chat.sendStateTyping();
+        } catch (err) {
+          logger.warn("Typing simulation error ignored", { chatId });
+        }
       }
 
       await sleep(remainingDelay);
       await client.sendMessage(chatId, safeReplyText);
 
-      if (settings.typingSimulation && typeof chat.clearState === "function") {
-        await chat.clearState();
+      if (settings.typingSimulation && chat && typeof chat.clearState === "function") {
+        try {
+          await chat.clearState();
+        } catch {
+          // Suppress cleanup errors
+        }
       }
 
       store.clearPendingReply(chatId);
