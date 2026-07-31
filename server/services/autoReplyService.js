@@ -220,22 +220,33 @@ function createAutoReplyService({ store, openAIService, getClient }) {
         }));
 
       const safeReplyText = sanitizeReplyText(replyText);
-      const targetDelay = randomNumberInRange(
-        settings.replyDelayMinSeconds * 1000,
-        settings.replyDelayMaxSeconds * 1000
-      );
-      const remainingDelay = Math.max(1000, targetDelay - (Date.now() - startedAt));
 
-      // Refresh typing status during delay
-      if (settings.typingSimulation && chat && typeof chat.sendStateTyping === "function") {
-        try {
-          await chat.sendStateTyping();
-        } catch (err) {
-          // Ignore refresh errors
+      // Calculate realistic human typing delay based on text length (4s base + ~100ms per character + random jitter)
+      const calculatedTypingMs = 4000 + (safeReplyText.length * 90) + randomNumberInRange(1000, 3500);
+      const minDelayMs = Math.max((settings.replyDelayMinSeconds || 5) * 1000, 4000);
+      const maxDelayMs = Math.max((settings.replyDelayMaxSeconds || 15) * 1000, 25000);
+      const targetDelayMs = Math.min(Math.max(calculatedTypingMs, minDelayMs), maxDelayMs);
+      const remainingDelay = Math.max(3000, targetDelayMs - (Date.now() - startedAt));
+
+      logger.info("Simulating human typing", {
+        chatId,
+        replyLength: safeReplyText.length,
+        delaySeconds: Math.round(remainingDelay / 1000)
+      });
+
+      // Refresh typing status every 3 seconds so 'typing...' badge never drops on recipient screen
+      const typingInterval = setInterval(() => {
+        if (chat && typeof chat.sendStateTyping === "function") {
+          chat.sendStateTyping().catch(() => {});
         }
+      }, 3000);
+
+      try {
+        await sleep(remainingDelay);
+      } finally {
+        clearInterval(typingInterval);
       }
 
-      await sleep(remainingDelay);
       await client.sendMessage(chatId, safeReplyText);
 
       if (settings.typingSimulation && chat && typeof chat.clearState === "function") {
