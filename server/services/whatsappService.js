@@ -160,6 +160,7 @@ function createWhatsAppService({ store, openAIService }) {
         clearReconnectTimer();
         store.resetReconnectAttempts();
         store.setConnectedClient(currentClient.info || {});
+        await currentClient.sendPresenceAvailable().catch(() => {});
         startChatSyncLoop();
         await buildChatSnapshot().catch((err) => {
           logger.warn("Initial chat sync non-fatal warning", { error: err?.message || String(err) });

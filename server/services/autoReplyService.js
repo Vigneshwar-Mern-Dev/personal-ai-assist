@@ -94,12 +94,19 @@ function createAutoReplyService({ store, openAIService, getClient }) {
       body
     });
 
+    if (settings.typingSimulation && chat && typeof chat.sendStateTyping === "function") {
+      chat.sendStateTyping().catch((err) => {
+        logger.warn("Immediate typing simulation failed", { chatId: message.from, error: err?.message || String(err) });
+      });
+    }
+
     queueReply({
       chatId: message.from,
       messageId: message.id?.id || `msg-${Date.now()}`,
       body,
       chatName: contactName,
-      unreadCount: chat?.unreadCount || 1
+      unreadCount: chat?.unreadCount || 1,
+      chat
     });
   }
 
